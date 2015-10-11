@@ -1,42 +1,51 @@
 ##############################################
 ############### IRIS User Interact Functions
-
+### Find the fit for test set
 iris_myC45 <- function(){
   library(datasets)
   data("iris")
-  result <- myC45(Species~., iris)
-
+  dataset <- divideDataset(iris)
+  result <- myC45(Species~., dataset$training)
+  result
 }
 
 iris_myC45Predict<-function(){
-  iris_Predict(iris_myC45())
+  fit <- iris_myC45()
+  library(datasets)
+  data("iris")
+  dataset <- divideDataset(iris)
+  myC45Predict(fit, dataset$test[,1:4], dataset$test$Species)
 }
+
 
 iris_Ripper <- function(){
   library(datasets)
   data("iris")
-  myRipper(Species~., iris)
+  dataset <- divideDataset(iris)
+  fit <- myRipper(Species~., dataset$training)
+  fit
 }
 iris_RipperPredict <- function(){
-  ####Calling middile group function passing correct fit
-  iris_Predict(iris_Ripper())
-}
-
-iris_Predict <- function(fit){
+  fit <- iris_Ripper()
   library(datasets)
   data("iris")
-  myC45Predict(fit, iris[,1:4], iris$Species)
+  dataset <- divideDataset(iris)
+  myC45Predict(fit, dataset$test[,1:4], dataset$test$Species)
 }
 
 iris_myOblique <- function(){
   library(datasets)
   data("iris")
-  myOblique(Species~., iris)
+  dataset <- divideDataset(iris)
+  myOblique(Species~., dataset$training)
 }
 
 iris_myObliquePredict <- function(){
-  ####Calling middile group function passing correct fit
-  iris_Predict(iris_myOblique())
+  fit <- iris_myOblique()
+  library(datasets)
+  data("iris")
+  dataset <- divideDataset(iris)
+  myC45Predict(fit, dataset$test[,1:4], dataset$test$Species)
 }
 
 ##############################################
@@ -45,7 +54,8 @@ iris_myObliquePredict <- function(){
 
 LE_myC45 <- function(){
   LE <- getLE()
-  result <- myC45(LE$Continent~., LE)
+  dataset <- divideDataset(LE)
+  result <- myC45(dataset$training$Continent~., dataset$training)
   result
 
 }
@@ -56,24 +66,37 @@ LE_myC45Predict <-function(){
   LE_Predict(LE_myC45())
 }
 
+LE_Ripper <- function(){
+  LE <- getLE()
+  dataset <- divideDataset(LE)
+  result <- myRipper(dataset$training$Continent~., dataset$training)
+  result
+}
+
 LE_RipperPredict <- function(){
   ####Calling middile group function passing correct fit
 
   LE_Predict(LE_Ripper())
 }
-LE_Predict <- function(fit){
-  LE <- getLE()
-  myC45Predict(fit, LE[,1:7], LE$Continent)
-
-}
-LE_Ripper <- function(){
-  LE <- getLE()
-  myRipper(Continent~., LE)
-}
 
 LE_myOblique <- function(){
   LE <- getLE()
-  myOblique(Continent~., LE[3:8])
+  dataset <- divideDataset(LE)
+  result <- myOblique(dataset$training$Continent~., dataset$training[,3:8])
+  result
+}
+
+LE_myObliquePredict <- function(){
+  LE <- getLE()
+  dataset <- divideDataset(LE)
+  myC45Predict(LE_myOblique(), dataset$test[,3:7], dataset$test$Continent)
+}
+
+LE_Predict <- function(fit){
+  LE <- getLE()
+  dataset <- divideDataset(LE)
+  myC45Predict(fit, dataset$test[,1:7], dataset$test$Continent)
+
 }
 
 ############################################
@@ -92,7 +115,7 @@ myC45 <- function(subset, dataset){
 
 myC45Predict <- function(fit, sample, Sample){
   library(RWeka)
-  predictions <- predict(fit, sample)
+  predictions <- predict(fit, sample, type = "class")
   table(predictions, Sample)
 }
 
@@ -137,12 +160,29 @@ divideDataset <- function(ori_set){
 iris_naiveBayes <- function(){
   library(datasets)
   data("iris")
-  nb(iris[,1:4], iris$Species)
+  dataset <- divideDataset(iris)
+  nb(dataset$training[,1:4], dataset$training$Species)
+}
+
+iris_nbPredict <- function(){
+  fit <- iris_naiveBayes()
+  library(datasets)
+  data("iris")
+  dataset <- divideDataset(iris)
+  myC45Predict(fit, dataset$test[,1:4], dataset$test$Species)
 }
 
 LE_naiveBayes <- function(){
   LE <- getLE()
-  nb(LE[,1:7], LE$Continent)
+  dataset <- divideDataset(LE)
+  nb(dataset$training[,1:7], dataset$training$Continent)
+}
+
+LE_nbPredict <- function(){
+  fit <- LE_naiveBayes()
+  LE <- getLE()
+  dataset <- divideDataset(LE)
+  myC45Predict(fit, dataset$test[1:7], dataset$test$Continent)
 }
 
 nb <- function(data, class){
